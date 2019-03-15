@@ -1,0 +1,6 @@
+export const environment = {
+    here: {
+        app_id:   '<YOUR-APP-ID>',
+        app_code: '<YOUR-APP-CODE>'
+    }
+}
