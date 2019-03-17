@@ -1,6 +1,7 @@
 export const environment = {
     geocoderHereApi: {
-        app_id:   '<YOUR-APP-ID>',
+        app_id: '<YOUR-APP-ID>',
         app_code: '<YOUR-APP-CODE>'
-    }
+    },
+    events: ['<SOME-EVENT>', '<ANOTHER-EVENT>']
 }
