@@ -1,5 +1,7 @@
 export interface Place<GeoPoint> {
-    city?: string | null;
-    country: string;
+    continent: string | null;
+    country: string | null;
+    region: string | null;
+    city: string | null;
     geoPoint: GeoPoint;
 }
