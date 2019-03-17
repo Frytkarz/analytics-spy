@@ -12,7 +12,8 @@ export class PlacesService {
 
     public async getPlace(info: functions.analytics.GeoInfo): Promise<Place<admin.firestore.GeoPoint> | null> {
         console.log(info);
-        if (StringUtils.isNullOrEmpty(info.country)
+        if (StringUtils.isNullOrEmpty(info.continent)
+            && StringUtils.isNullOrEmpty(info.country)
             && StringUtils.isNullOrEmpty(info.region)
             && StringUtils.isNullOrEmpty(info.city)) {
             console.error('Could not get place because geo info does not contain any info.')
@@ -33,8 +34,7 @@ export class PlacesService {
                     console.error(`Found more than one place in firestore with geoInfo='${JSON.stringify(info)}'.`);
                 }
             } else {
-                const search = StringUtils.excludeNullsOrEmpties(info.country, info.region, info.city);
-                console.log(search);
+                const search = StringUtils.excludeNullsOrEmpties(info.continent, info.country, info.region, info.city);
                 const geoCode = await this.geocoderHereApi().geocode(search.join(' '));
                 if (geoCode.Response.View && geoCode.Response.View.length > 0) {
                     const position = geoCode.Response.View[0].Result[0].Location.DisplayPosition;
