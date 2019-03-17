@@ -1,8 +1,8 @@
-import { Place } from '../places/place';
+import { Location } from '../locations/location';
 
 export interface Event<Timestamp, GeoPoint> {
     timestamp: Timestamp;
     name: string;
     params?: { [key: string]: string | number } | null;
-    place?: Place<GeoPoint> | null;
+    location?: Location<GeoPoint> | null;
 }
