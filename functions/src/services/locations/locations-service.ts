@@ -20,7 +20,7 @@ export class LocationsService {
         }
 
         let location: Location<admin.firestore.GeoPoint> | null = null;
-        const collection = admin.firestore().collection(FSPath.places());
+        const collection = admin.firestore().collection(FSPath.locations());
         await admin.firestore().runTransaction(async t => {
             const snap = await t.get(collection
                 .where('continent', '==', info.continent || null)
