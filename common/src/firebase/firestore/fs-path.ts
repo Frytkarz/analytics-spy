@@ -3,7 +3,7 @@ export class FSPath {
         return 'events';
     }
 
-    public static places(): string {
-        return 'places';
+    public static locations(): string {
+        return 'locations';
     }
 }
