@@ -7,7 +7,6 @@ import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { DistinctEvent } from '../models/distinct-event';
-import { KeyValue } from '@angular/common';
 
 @Injectable({
     providedIn: 'root'
@@ -25,19 +24,19 @@ export class DataService {
                     if (distinct == null) {
                         distinct = {
                             name: e.name,
-                            placeEvents: []
+                            locationEvents: []
                         };
                         result.push(distinct);
                     }
 
-                    const place = distinct.placeEvents.find(p => (p.place == null && e.place == null)
-                        || (p.place && e.place && p.place.geoPoint.isEqual(e.place.geoPoint)));
+                    const place = distinct.locationEvents.find(p => (p.location == null && e.location == null)
+                        || (p.location && e.location && p.location.geoPoint.isEqual(e.location.geoPoint)));
                     if (place != null) {
                         place.events.push(e);
                     } else {
-                        distinct.placeEvents.push({
+                        distinct.locationEvents.push({
                             events: [e],
-                            place: e.place
+                            location: e.location
                         });
                     }
                 }

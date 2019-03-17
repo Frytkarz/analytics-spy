@@ -3,7 +3,7 @@ import { Event } from '../../../../../common/src/firebase/firestore/models/event
 import { EChartOption, ECharts } from 'echarts';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
-import { DistinctEvent, PlaceEvent } from 'src/app/models/distinct-event';
+import { DistinctEvent, LocationEvent } from 'src/app/models/distinct-event';
 import { DataService } from 'src/app/services/data.service';
 
 @Component({
@@ -24,10 +24,10 @@ export class MapComponent implements OnInit {
         tooltip: {
             trigger: 'item',
             formatter: function (params: EChartOption.Tooltip.Format) {
-                const event = params.data.placeEvent as PlaceEvent;
+                const event = params.data.placeEvent as LocationEvent;
                 return `Event: ${event.events[0].name}</br>
 Count: ${event.events.length}</br>
-Place: ${event.place && `${event.place.country}, ${event.place.region}, ${event.place.city}` || 'Unknown'}`;
+Place: ${event.location && `${event.location.country}, ${event.location.region}, ${event.location.city}` || 'Unknown'}`;
             }
         },
         geo: {
@@ -76,11 +76,11 @@ Place: ${event.place && `${event.place.country}, ${event.place.region}, ${event.
                     type: 'scatter',
                     coordinateSystem: 'geo',
                     name: de.name,
-                    data: de.placeEvents.map(p => {
+                    data: de.locationEvents.map(p => {
                         return {
                             name: de.name,
-                            value: p.place != null
-                                ? [p.place.geoPoint.longitude, p.place.geoPoint.latitude]
+                            value: p.location != null
+                                ? [p.location.geoPoint.longitude, p.location.geoPoint.latitude]
                                 : [31.158288, -40.293733],
                             placeEvent: p
                         };
