@@ -5,11 +5,19 @@
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "city",
+                    "fieldPath": "continent",
                     "mode": "ASCENDING"
                 },
                 {
                     "fieldPath": "country",
+                    "mode": "ASCENDING"
+                },
+                {
+                    "fieldPath": "region",
+                    "mode": "ASCENDING"
+                },
+                {
+                    "fieldPath": "city",
                     "mode": "ASCENDING"
                 }
             ]
