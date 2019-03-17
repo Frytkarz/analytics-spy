@@ -1,21 +1,21 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { PlacesService } from '../places/places-service';
+import { LocationsService } from '../locations/locations-service';
 import { Event } from '../../../../common/src/firebase/firestore/models/events/event';
 import { FSPath } from '../../../../common/src/firebase/firestore/fs-path';
 
 export class EventsService {
-    public constructor(private places: () => PlacesService) {
+    public constructor(private locations: () => LocationsService) {
     }
 
     public async handleEvent(event: functions.analytics.AnalyticsEvent) {
-        let place = null;
+        let location = null;
         if (event.user !== undefined)
-            place = await this.places().getPlace(event.user.geoInfo);
+            location = await this.locations().getLocation(event.user.geoInfo);
         const newEvent: Event<admin.firestore.Timestamp, admin.firestore.GeoPoint> = {
             name: event.name,
             timestamp: admin.firestore.Timestamp.fromDate(new Date(event.logTime)),
-            place: place
+            location: location
         };
         await admin.firestore().collection(FSPath.events()).add(newEvent);
     }

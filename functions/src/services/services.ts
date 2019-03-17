@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import { EventsService } from "./events/events-service";
 import { GeocoderHereApiService } from "./geocoder-here-api/geocoder-here-api-service";
 import { environment } from "../environments/environment";
-import { PlacesService } from "./places/places-service";
+import { LocationsService } from "./locations/locations-service";
 
 
 export class Services {
@@ -17,11 +17,11 @@ export class Services {
     }
 
     private eventsInstance = new Lazy<EventsService>(() => new EventsService(() => this.places));
-    private placesInstance = new Lazy<PlacesService>(() => new PlacesService(() => this.geocoderHereApi));
+    private placesInstance = new Lazy<LocationsService>(() => new LocationsService(() => this.geocoderHereApi));
     private geocoderHereApiInstance = new Lazy<GeocoderHereApiService>(() => new GeocoderHereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code));
 
     public get events(): EventsService { return this.eventsInstance.value; }
-    public get places(): PlacesService { return this.placesInstance.value; }
+    public get places(): LocationsService { return this.placesInstance.value; }
     public get geocoderHereApi(): GeocoderHereApiService { return this.geocoderHereApiInstance.value; }
 
     private constructor() {
