@@ -27,7 +27,7 @@ export class MapComponent implements OnInit {
                 const event = params.data.placeEvent as PlaceEvent;
                 return `Event: ${event.events[0].name}</br>
 Count: ${event.events.length}</br>
-Place: ${event.place && `${event.place.country}, ${event.place.city || 'Unknown'}` || 'Unknown'}`;
+Place: ${event.place && `${event.place.country}, ${event.place.region}, ${event.place.city}` || 'Unknown'}`;
             }
         },
         geo: {
