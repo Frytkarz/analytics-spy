@@ -1,5 +1,1 @@
-<p>
-    map works!
-</p>
-
-<div echarts [options]="chartOption" class="demo-chart"></div>
+<div echarts class="echart" [options]="chartOption" (chartInit)="onChartInit($event)"></div>

@@ -5,6 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+import { Ng2GoogleChartsModule } from 'ng2-google-charts';
 import { NgxEchartsModule } from 'ngx-echarts';
 
 import { AngularFireModule } from '@angular/fire';
@@ -37,6 +38,7 @@ import { environment } from '../environments/environment';
         ReactiveFormsModule,
         RoutingModule,
 
+        Ng2GoogleChartsModule,
         NgxEchartsModule,
 
         AngularFireModule.initializeApp(environment.firebase),

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-
 import { Event } from '../../../../../common/src/firebase/firestore/models/events/event';
-
-import { EChartOption } from 'echarts';
-
+import { EChartOption, ECharts } from 'echarts';
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
+import { DistinctEvent, PlaceEvent } from 'src/app/models/distinct-event';
+import { DataService } from 'src/app/services/data.service';
 
 @Component({
     selector: 'app-map',
@@ -11,26 +12,93 @@ import { EChartOption } from 'echarts';
     styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit {
+    echartsInstance: ECharts;
     chartOption: EChartOption = {
-        xAxis: {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        backgroundColor: '#a0d4d8',
+        title: {
+            text: 'My super app',
+            subtext: 'Realtime events reporting',
+            left: 'center',
+            top: 'top'
         },
-        yAxis: {
-            type: 'value'
+        tooltip: {
+            trigger: 'item',
+            formatter: function (params: EChartOption.Tooltip.Format) {
+                const event = params.data.placeEvent as PlaceEvent;
+                return `Event: ${event.events[0].name}</br>
+Count: ${event.events.length}</br>
+Place: ${event.place && `${event.place.country}, ${event.place.city || 'Unknown'}` || 'Unknown'}`;
+            }
         },
-        series: [{
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
-            type: 'line'
-        }]
+        geo: {
+            type: 'map',
+            map: 'world',
+            roam: true,
+            label: {
+                emphasis: {
+                    show: false
+                }
+            },
+            itemStyle: {
+                normal: {
+                    areaColor: '#64c2c9',
+                    borderColor: '#111'
+                },
+                emphasis: {
+                    areaColor: '#55acb2'
+                }
+            }
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: []
+        },
+        series: []
     };
 
-    events: Event[];
+    events: Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>[];
 
-    constructor() {
+    constructor(private data: DataService) {
     }
 
     ngOnInit() {
+
     }
 
+    onChartInit(e) {
+        this.echartsInstance = e;
+        this.data.subscribeEvents().subscribe(distinctEvents => {
+            const legendData = (this.chartOption.legend as any).data = [];
+            this.chartOption.series = distinctEvents.map(de => {
+                legendData.push(de.name);
+                return {
+                    type: 'scatter',
+                    coordinateSystem: 'geo',
+                    name: de.name,
+                    data: de.placeEvents.map(p => {
+                        return {
+                            name: de.name,
+                            value: p.place != null
+                                ? [p.place.geoPoint.longitude, p.place.geoPoint.latitude]
+                                : [31.158288, -40.293733],
+                            placeEvent: p
+                        };
+                    })
+                };
+            });
+            this.echartsInstance.setOption(this.chartOption);
+            console.log(this.chartOption);
+        });
+    }
+
+    //     {
+    //         name: 'Buy',
+    //         timestamp: firebase.firestore.Timestamp.now(),
+    //         place: {
+    //             city: 'Katowice',
+    //             country: 'Poland',
+    //             geoPoint: new firebase.firestore.GeoPoint(18.987528, 50.228532)
+    //         }
+    //     } as Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>
 }
