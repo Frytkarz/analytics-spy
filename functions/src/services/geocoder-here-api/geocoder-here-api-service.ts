@@ -8,7 +8,7 @@ export class GeocoderHereApiService {
         this.baseUrl = `https://geocoder.api.here.com/${version}/`;
     }
 
-    public async geocode(country: string, city?: string): Promise<GeoCode> {
+    public async geocode(searchtext: string): Promise<GeoCode> {
         const options: request.Options = {
             uri: this.baseUrl + 'geocode.json',
             simple: false,
@@ -17,11 +17,8 @@ export class GeocoderHereApiService {
             qs: {
                 app_id: this.appId,
                 app_code: this.appCode,
-                country: country
+                searchtext: searchtext
             }
-        }
-        if (city != null) {
-            options.qs.city = city;
         }
 
         const response: request.FullResponse = await request.get(options);

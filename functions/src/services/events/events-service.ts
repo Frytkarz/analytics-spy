@@ -9,7 +9,9 @@ export class EventsService {
     }
 
     public async handleEvent(event: functions.analytics.AnalyticsEvent) {
-        const place = await this.places().getPlace((event.user && event.user.geoInfo.country) as string, (event.user && event.user.geoInfo.city) as string);
+        let place = null;
+        if (event.user !== undefined)
+            place = await this.places().getPlace(event.user.geoInfo);
         const newEvent: Event<admin.firestore.Timestamp, admin.firestore.GeoPoint> = {
             name: event.name,
             timestamp: admin.firestore.Timestamp.fromDate(new Date(event.logTime)),
