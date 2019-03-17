@@ -1,5 +1,5 @@
 export const environment = {
-    here: {
+    geocoderHereApi: {
         app_id:   '<YOUR-APP-ID>',
         app_code: '<YOUR-APP-CODE>'
     }
