@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Event } from '../../../../../common/src/firebase/firestore/models/events/event';
 import { EChartOption, ECharts } from 'echarts';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import { DistinctEvent, LocationEvent } from 'src/app/models/distinct-event';
 import { DataService } from 'src/app/services/data.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-map',
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements OnDestroy {
     echartsInstance: ECharts;
     chartOption: EChartOption = {
         backgroundColor: '#a0d4d8',
@@ -57,18 +58,14 @@ Place: ${event.location && `${event.location.country}, ${event.location.region},
         series: []
     };
 
-    events: Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>[];
+    subscription: Subscription = undefined;
 
     constructor(private data: DataService) {
     }
 
-    ngOnInit() {
-
-    }
-
     onChartInit(e) {
         this.echartsInstance = e;
-        this.data.subscribeEvents().subscribe(distinctEvents => {
+        this.subscription = this.data.subscribeEvents().subscribe(distinctEvents => {
             const legendData = (this.chartOption.legend as any).data = [];
             this.chartOption.series = distinctEvents.map(de => {
                 legendData.push(de.name);
@@ -88,17 +85,12 @@ Place: ${event.location && `${event.location.country}, ${event.location.region},
                 };
             });
             this.echartsInstance.setOption(this.chartOption);
-            console.log(this.chartOption);
         });
     }
 
-    //     {
-    //         name: 'Buy',
-    //         timestamp: firebase.firestore.Timestamp.now(),
-    //         place: {
-    //             city: 'Katowice',
-    //             country: 'Poland',
-    //             geoPoint: new firebase.firestore.GeoPoint(18.987528, 50.228532)
-    //         }
-    //     } as Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>
+    ngOnDestroy() {
+        if (this.subscription !== undefined) {
+            this.subscription.unsubscribe();
+        }
+    }
 }
