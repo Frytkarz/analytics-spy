@@ -9,7 +9,7 @@
         ]
     },
     "hosting": {
-        "public": "hosting/dist/am-f2p",
+        "public": "hosting/dist",
         "ignore": [
             "firebase.json",
             "**/.*",
