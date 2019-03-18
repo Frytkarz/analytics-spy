@@ -19,4 +19,15 @@ export class EventsService {
         };
         await admin.firestore().collection(FSPath.events()).add(newEvent);
     }
+
+    public async clearEvents(olderThan: admin.firestore.Timestamp) {
+        const snaps = await admin.firestore().collection(FSPath.events()).where('timestamp', '<', olderThan).get();
+        const batch = admin.firestore().batch();
+
+        snaps.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+    }
 }

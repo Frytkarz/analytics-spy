@@ -3,5 +3,6 @@ export const environment = {
         app_id: '<YOUR-APP-ID>',
         app_code: '<YOUR-APP-CODE>'
     },
+    apiKey: '<RANDOMLY-GENERATED-API-KEY>',
     events: ['<SOME-EVENT>', '<ANOTHER-EVENT>']
 }
