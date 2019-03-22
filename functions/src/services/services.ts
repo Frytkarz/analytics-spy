@@ -6,6 +6,7 @@ import { HereApiService } from "./geocoder/here-api/here-api-service";
 import { environment } from "../environments/environment";
 import { LocationsService } from "./locations/locations-service";
 import { IGeocoderService } from "./geocoder/igeocoder-service";
+import { LocationIQApiService } from "./geocoder/locationiq-api/locationiq-api-service";
 
 
 export class Services {
@@ -26,7 +27,8 @@ export class Services {
 
 
     public geocoders = new Multiton<IGeocoderService>({
-        here: () => new HereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code)
+        here: () => new HereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code),
+        locationIQ: () => new LocationIQApiService(environment.locationIQApiKey)
     })
 
     private constructor() {
