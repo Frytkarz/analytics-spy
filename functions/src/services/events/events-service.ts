@@ -22,7 +22,7 @@ export class EventsService {
 
     public async clearEvents(olderThan: admin.firestore.Timestamp) {
         const snap = await admin.firestore().collection(FSPath.events()).where('timestamp', '<', olderThan).get();
-        const batch = admin.firestore().batch();
+        let batch = admin.firestore().batch();
 
         for (let i = 0; i < snap.size; i++) {
             batch.delete(snap.docs[i].ref);
@@ -30,6 +30,7 @@ export class EventsService {
             // commit every 500 operations, because of limitation
             if ((i + 1) % 500 === 0) {
                 await batch.commit();
+                batch = admin.firestore().batch();
             }
         }
 
