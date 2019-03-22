@@ -3,11 +3,13 @@ import * as functions from 'firebase-functions';
 import { Location } from '../../../../common/src/firebase/firestore/models/locations/location';
 import { FSPath } from '../../../../common/src/firebase/firestore/fs-path';
 import { StringUtils } from '../../../../common/src/typescript/utils/string-utils';
-import { GeocoderHereApiService } from "../geocoder-here-api/geocoder-here-api-service";
+import { Multiton } from '../../../../common/src/typescript/utils/multiton';
+import { IGeocoderService } from '../geocoder/igeocoder-service';
+
 const hash = require('object-hash');
 
 export class LocationsService {
-    public constructor(private geocoderHereApi: () => GeocoderHereApiService) {
+    public constructor(private geocoders: () => Multiton<IGeocoderService>) {
     }
 
     public async getLocation(info: functions.analytics.GeoInfo): Promise<Location<admin.firestore.GeoPoint> | null> {
@@ -33,22 +35,21 @@ export class LocationsService {
                     console.error(`Found more than one place in firestore with geoInfo='${JSON.stringify(info)}'.`);
                 }
             } else {
-                const search = StringUtils.excludeNullsOrEmpties(info.continent, info.country, info.region, info.city);
-                const geoCode = await this.geocoderHereApi().geocode(search.join(' '));
-                if (geoCode.Response.View && geoCode.Response.View.length > 0) {
-                    const position = geoCode.Response.View[0].Result[0].Location.DisplayPosition;
+                let geoPoint: admin.firestore.GeoPoint | null = null;
+                await this.geocoders().forEachAsync(async c => {
+                    geoPoint = await c.getGeoPoint(info);
+                    return geoPoint != null;
+                });
+
+                if (geoPoint != null) {
                     location = {
                         continent: info.continent || null,
                         country: info.country || null,
                         region: info.region || null,
                         city: info.city || null,
-                        geoPoint: new admin.firestore.GeoPoint(position.Latitude, position.Longitude)
+                        geoPoint: geoPoint
                     };
                     await t.set(collection.doc(hash(location)), location);
-
-                    if (geoCode.Response.View.length > 1) {
-                        console.error(`Found more than one place via HereAPI with geoInfo='${JSON.stringify(info)}'.`);
-                    }
                 } else {
                     console.error(`Could not find place via HereAPI with geoInfo='${JSON.stringify(info)}'.`);
                 }

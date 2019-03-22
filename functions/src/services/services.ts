@@ -1,9 +1,11 @@
 import { Lazy } from "../../../common/src/typescript/utils/lazy";
+import { Multiton } from "../../../common/src/typescript/utils/multiton";
 import * as admin from 'firebase-admin';
 import { EventsService } from "./events/events-service";
-import { GeocoderHereApiService } from "./geocoder-here-api/geocoder-here-api-service";
+import { HereApiService } from "./geocoder/here-api/here-api-service";
 import { environment } from "../environments/environment";
 import { LocationsService } from "./locations/locations-service";
+import { IGeocoderService } from "./geocoder/igeocoder-service";
 
 
 export class Services {
@@ -17,12 +19,15 @@ export class Services {
     }
 
     private eventsInstance = new Lazy<EventsService>(() => new EventsService(() => this.places));
-    private placesInstance = new Lazy<LocationsService>(() => new LocationsService(() => this.geocoderHereApi));
-    private geocoderHereApiInstance = new Lazy<GeocoderHereApiService>(() => new GeocoderHereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code));
+    private placesInstance = new Lazy<LocationsService>(() => new LocationsService(() => this.geocoders));
 
     public get events(): EventsService { return this.eventsInstance.value; }
     public get places(): LocationsService { return this.placesInstance.value; }
-    public get geocoderHereApi(): GeocoderHereApiService { return this.geocoderHereApiInstance.value; }
+
+
+    public geocoders = new Multiton<IGeocoderService>({
+        here: () => new HereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code)
+    })
 
     private constructor() {
     }
