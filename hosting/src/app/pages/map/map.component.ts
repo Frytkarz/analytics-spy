@@ -6,6 +6,9 @@ import 'firebase/firestore';
 import { DistinctEvent, LocationEvent } from 'src/app/models/distinct-event';
 import { DataService } from 'src/app/services/data.service';
 import { Subscription } from 'rxjs';
+import * as mathjs from 'mathjs';
+import { config } from '../../../../../common/src/config/config';
+import { FormControl } from '@angular/forms';
 
 @Component({
     selector: 'app-map',
@@ -13,6 +16,13 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnDestroy {
+    optionsVisible = false;
+    minutesBefore = 0;
+
+    config = config;
+    event: string;
+    allEvents = Object.keys(config.events);
+
     echartsInstance: ECharts;
     chartOption: EChartOption = {
         backgroundColor: '#a0d4d8',
@@ -26,9 +36,29 @@ export class MapComponent implements OnDestroy {
             trigger: 'item',
             formatter: function (params: EChartOption.Tooltip.Format) {
                 const event = params.data.placeEvent as LocationEvent;
-                return `Event: ${event.events[0].name}</br>
-Count: ${event.events.length}</br>
-Place: ${event.location && `${event.location.country}, ${event.location.region}, ${event.location.city}` || 'Unknown'}`;
+                const name = event.events[0].name;
+                const eventConfig = config.events[name];
+
+                let result = `Event: ${eventConfig.displayName}
+</br>Count: ${event.events.length}
+</br>Location: ${event.location && `${event.location.country}, ${event.location.region}, ${event.location.city}` || 'Unknown'}`;
+
+                if (eventConfig.valueInUSD !== undefined) {
+                    const agg = eventConfig.valueInUSD.agregation;
+                    const values = event.events.map(e => e.valueInUSD);
+                    const value = agg === 'array' ? `[${values.join(', ')}]` : mathjs.round(mathjs[agg](...values), 2);
+                    result = result + `</br>- Value in USD (${agg}): ${value}`;
+                }
+                if (eventConfig.params !== undefined) {
+                    for (const param of Object.keys(eventConfig.params)) {
+                        const agg = eventConfig.params[param].agregation;
+                        const values = event.events.map(e => e.params[param]);
+                        const value = agg === 'array' ? `[${values.join(', ')}]` : mathjs.round(mathjs[agg](...values), 2);
+                        result = result + `</br>- ${param} (${agg}): ${value}`;
+                    }
+                }
+
+                return result;
             }
         },
         geo: {
@@ -53,7 +83,8 @@ Place: ${event.location && `${event.location.country}, ${event.location.region},
         legend: {
             orient: 'vertical',
             left: 'left',
-            data: []
+            data: [],
+            formatter: id => config.events[id].displayName
         },
         series: []
     };
@@ -65,7 +96,29 @@ Place: ${event.location && `${event.location.country}, ${event.location.region},
 
     onChartInit(e) {
         this.echartsInstance = e;
-        this.subscription = this.data.subscribeEvents().subscribe(distinctEvents => {
+        this.refresh();
+    }
+
+    ngOnDestroy() {
+        if (this.subscription !== undefined) {
+            this.subscription.unsubscribe();
+        }
+    }
+
+    refresh() {
+        if (this.subscription !== undefined) {
+            this.subscription.unsubscribe();
+        }
+        (this.chartOption.legend as any).data = [];
+        this.chartOption.series = [];
+        this.echartsInstance.setOption(this.chartOption, true);
+
+        let from = firebase.firestore.Timestamp.now();
+        if (this.minutesBefore > 0) {
+            from = firebase.firestore.Timestamp.fromMillis((from.seconds - (this.minutesBefore * 60)) * 1000);
+        }
+
+        this.subscription = this.data.subscribeEvents(from, this.event).subscribe(distinctEvents => {
             const legendData = (this.chartOption.legend as any).data = [];
             this.chartOption.series = distinctEvents.map(de => {
                 legendData.push(de.name);
@@ -84,13 +137,18 @@ Place: ${event.location && `${event.location.country}, ${event.location.region},
                     })
                 };
             });
-            this.echartsInstance.setOption(this.chartOption);
+            this.echartsInstance.setOption(this.chartOption, true);
         });
+
+        this.optionsVisible = false;
     }
 
-    ngOnDestroy() {
-        if (this.subscription !== undefined) {
-            this.subscription.unsubscribe();
-        }
+    onOptionsClick() {
+        this.optionsVisible = !this.optionsVisible;
+    }
+
+    sliderValueFormatter(value: number): string {
+        const mins = value % 60;
+        return `${(value - mins) / 60}:${mins}`;
     }
 }

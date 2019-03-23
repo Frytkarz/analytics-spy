@@ -29,6 +29,7 @@
         "echarts": "^4.1.0",
         "firebase": "^5.9.0",
         "hammerjs": "^2.0.8",
+        "mathjs": "^5.8.0",
         "ng2-google-charts": "^4.0.0",
         "ngx-echarts": "^4.1.0",
         "rxjs": "~6.3.3",

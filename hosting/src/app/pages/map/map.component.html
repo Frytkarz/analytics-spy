@@ -1,1 +1,32 @@
-<div echarts class="echart" [options]="chartOption" (chartInit)="onChartInit($event)"></div>
+<div echarts class="echart" [options]="chartOption"
+    (chartInit)="onChartInit($event)">
+</div>
+
+<button class="btn-options" *ngIf="echartsInstance"
+    (click)="onOptionsClick()"></button>
+
+<mat-card class="options-container" *ngIf="optionsVisible">
+    <mat-card-content>
+        <h2 class="example-h2">Config</h2>
+        <div>
+            <p>Include events that was logged before now (hours:minutes)</p>
+            <mat-slider class="slider" thumbLabel invert="true" max="1440"
+                min="0" [displayWith]="sliderValueFormatter"
+                [(ngModel)]="minutesBefore">
+            </mat-slider>
+            <br />
+            <mat-form-field>
+                <mat-label>Filter events</mat-label>
+                <mat-select [(value)]="event">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let event of allEvents" [value]="event">
+                        {{config.events[event].displayName}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <button mat-raised-button color="warn"
+            (click)="optionsVisible = false">Cancel</button>
+        <button mat-raised-button color="primary" class="btn-refresh"
+            (click)="refresh()">Refresh</button>
+    </mat-card-content>
+</mat-card>

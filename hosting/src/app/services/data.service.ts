@@ -14,9 +14,15 @@ import { DistinctEvent } from '../models/distinct-event';
 export class DataService {
     constructor(private firestore: AngularFirestore) { }
 
-    subscribeEvents(): Observable<DistinctEvent[]> {
+    subscribeEvents(from: firebase.firestore.Timestamp, eventName?: string): Observable<DistinctEvent[]> {
         return this.firestore.collection<Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>>
-            (FSPath.events(), ref => ref.where('timestamp', '>=', firebase.firestore.Timestamp.now()))
+            (FSPath.events(), ref => {
+                let query = ref.where('timestamp', '>=', from);
+                if (eventName !== undefined) {
+                    query = query.where('name', '==', eventName);
+                }
+                return query;
+            })
             .valueChanges().pipe(map(events => {
                 const result: DistinctEvent[] = [];
                 for (const e of events) {
