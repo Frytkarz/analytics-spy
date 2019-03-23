@@ -4,4 +4,5 @@ export interface Location<GeoPoint> {
     region: string | null;
     city: string | null;
     geoPoint: GeoPoint;
+    geocoder: string;
 }
