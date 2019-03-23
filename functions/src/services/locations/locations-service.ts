@@ -36,22 +36,24 @@ export class LocationsService {
                 }
             } else {
                 let geoPoint: admin.firestore.GeoPoint | null = null;
-                await this.geocoders().forEachAsync(async c => {
-                    geoPoint = await c.getGeoPoint(info);
-                    return geoPoint != null;
-                });
+                for (const id of this.geocoders().getIds()) {
+                    geoPoint = await this.geocoders().getInstance(id).getGeoPoint(info);
+                    if (geoPoint != null) {
+                        location = {
+                            continent: info.continent || null,
+                            country: info.country || null,
+                            region: info.region || null,
+                            city: info.city || null,
+                            geoPoint: geoPoint,
+                            geocoder: id
+                        };
+                        await t.set(collection.doc(hash(location)), location);
+                        break;
+                    }
+                }
 
-                if (geoPoint != null) {
-                    location = {
-                        continent: info.continent || null,
-                        country: info.country || null,
-                        region: info.region || null,
-                        city: info.city || null,
-                        geoPoint: geoPoint
-                    };
-                    await t.set(collection.doc(hash(location)), location);
-                } else {
-                    console.error(`Could not find place via HereAPI with geoInfo='${JSON.stringify(info)}'.`);
+                if (geoPoint == null) {
+                    console.error(`Could not find location with geoInfo='${JSON.stringify(info)}' via any geocoder.`);
                 }
             }
         });

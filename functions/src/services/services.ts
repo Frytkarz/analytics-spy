@@ -27,8 +27,8 @@ export class Services {
 
 
     public geocoders = new Multiton<IGeocoderService>({
-        here: () => new HereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code),
-        locationIQ: () => new LocationIQApiService(environment.locationIQApiKey)
+        Here: () => new HereApiService(environment.geocoderHereApi.app_id, environment.geocoderHereApi.app_code),
+        LocationIQ: () => new LocationIQApiService(environment.locationIQApiKey)
     })
 
     private constructor() {
