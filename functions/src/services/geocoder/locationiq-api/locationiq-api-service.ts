@@ -3,6 +3,7 @@ import { IGeocoderService } from "../igeocoder-service";
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { Search } from './models/search';
+import * as StatusCodes from 'http-status-codes';
 
 export class LocationIQApiService implements IGeocoderService {
     private baseUrl: string;
@@ -27,11 +28,14 @@ export class LocationIQApiService implements IGeocoderService {
         }
 
         const response: request.FullResponse = await request.get(options);
-        if (response.statusCode !== 200)
+        if (response.statusCode !== StatusCodes.OK) {
+            if (response.statusCode != StatusCodes.NOT_FOUND) {
+                console.error(`LocationIQ API returned unexpected response with status=${response.statusCode} and body='${response.body}'.`)
+            }
             return null;
+        }
 
         const result: Search = response.body[0];
         return new admin.firestore.GeoPoint(Number(result.lat), Number(result.lon));
-
     }
 }

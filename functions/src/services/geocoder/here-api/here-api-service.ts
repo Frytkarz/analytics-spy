@@ -3,6 +3,7 @@ import * as request from 'request-promise-native';
 import { IGeocoderService } from "../igeocoder-service";
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import * as StatusCodes from 'http-status-codes';
 
 export class HereApiService implements IGeocoderService {
     private baseUrl: string;
@@ -28,12 +29,12 @@ export class HereApiService implements IGeocoderService {
 
         const response: request.FullResponse = await request.get(options);
         const geoCode: GeoCode = response.body;
+        if (response.statusCode != StatusCodes.OK) {
+            console.error(`Here API returned unexpected response with status=${response.statusCode} and body='${response.body}'.`)
+            return null;
+        }
 
-        if (geoCode.Response.View && geoCode.Response.View.length > 0) {
-            if (geoCode.Response.View.length > 1) {
-                console.error(`Found more than one place via HereAPI with geoInfo='${JSON.stringify(info)}'.`);
-            }
-
+        if (geoCode && geoCode.Response && geoCode.Response.View && geoCode.Response.View.length > 0) {
             const position = geoCode.Response.View[0].Result[0].Location.DisplayPosition;
             return new admin.firestore.GeoPoint(position.Latitude, position.Longitude);
         }
