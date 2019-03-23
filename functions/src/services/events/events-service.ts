@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin';
 import { LocationsService } from '../locations/locations-service';
 import { Event } from '../../../../common/src/firebase/firestore/models/events/event';
 import { FSPath } from '../../../../common/src/firebase/firestore/fs-path';
+import { config } from '../../../../common/src/config/config';
 
 export class EventsService {
     public constructor(private locations: () => LocationsService) {
@@ -17,6 +18,19 @@ export class EventsService {
             timestamp: admin.firestore.Timestamp.fromDate(new Date(event.logTime)),
             location: location
         };
+
+        // params
+        const eventConfig = config.events[event.name];
+        if (eventConfig.valueInUSD != undefined) {
+            newEvent.valueInUSD = event.valueInUSD;
+        }
+        if (eventConfig.params != undefined) {
+            newEvent.params = {};
+            for (const param of Object.keys(eventConfig.params)) {
+                newEvent.params[param] = event.params[param];
+            }
+        }
+
         await admin.firestore().collection(FSPath.events()).add(newEvent);
     }
 

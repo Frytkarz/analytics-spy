@@ -5,6 +5,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Services } from './services/services';
 import { environment } from './environments/environment';
+import { config } from '../../common/src/config/config';
 
 
 // ----------------------------------------------------------------------------------------------------------
@@ -18,7 +19,7 @@ Services.instance.init();
 // Analytics
 // ----------------------------------------------------------------------------------------------------------
 
-for (const eventName of environment.events) {
+for (const eventName of Object.keys(config.events)) {
     exports[eventName] = functions.runWith({ memory: '128MB' }).analytics.event(eventName).onLog((event, context) => {
         return Services.instance.events.handleEvent(event);
     });

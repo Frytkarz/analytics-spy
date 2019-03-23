@@ -4,6 +4,5 @@ export const environment = {
         app_code: '<YOUR-APP-CODE>'
     },
     locationIQApiKey: '<YOUR-TOKEN>',
-    apiKey: '<RANDOMLY-GENERATED-API-KEY>',
-    events: ['<SOME-EVENT>', '<ANOTHER-EVENT>']
+    apiKey: '<RANDOMLY-GENERATED-API-KEY>'
 }
