@@ -1,0 +1,23 @@
+import { EventConfig } from "./models/event-config";
+
+export const config = {
+    events: {
+        first_open: {
+            displayName: 'Install'
+        },
+        session_start: {
+            displayName: 'Open'
+        },
+        in_app_purchase: {
+            displayName: 'Purchase',
+            valueInUSD: {
+                agregation: 'sum'
+            },
+            params: {
+                product_id: {
+                    agregation: 'array'
+                }
+            }
+        }
+    } as { [name: string]: EventConfig }
+}
