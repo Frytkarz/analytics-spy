@@ -19,7 +19,7 @@ Services.instance.init();
 // ----------------------------------------------------------------------------------------------------------
 
 for (const eventName of environment.events) {
-    exports[eventName] = functions.analytics.event(eventName).onLog((event, context) => {
+    exports[eventName] = functions.runWith({ memory: '128MB' }).analytics.event(eventName).onLog((event, context) => {
         return Services.instance.events.handleEvent(event);
     });
 }
