@@ -36,6 +36,7 @@ export class EventsService {
 
     public async clearEvents(olderThan: admin.firestore.Timestamp) {
         const snap = await admin.firestore().collection(FSPath.events()).where('timestamp', '<', olderThan).get();
+        console.info(`Removing ${snap.size} events that is older than timestamp ${olderThan.seconds} (seconds).`);
         let batch = admin.firestore().batch();
 
         for (let i = 0; i < snap.size; i++) {
