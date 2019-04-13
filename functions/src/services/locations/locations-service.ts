@@ -13,11 +13,11 @@ export class LocationsService {
     }
 
     public async getLocation(info: functions.analytics.GeoInfo): Promise<Location<admin.firestore.GeoPoint> | null> {
-        if (StringUtils.isNullOrEmpty(info.continent)
+        if ((StringUtils.isNullOrEmpty(info.continent) || info.continent === '(not set)')
             && StringUtils.isNullOrEmpty(info.country)
             && StringUtils.isNullOrEmpty(info.region)
             && StringUtils.isNullOrEmpty(info.city)) {
-            console.error('Could not get place because geo info does not contain any info.')
+            console.error(`Could not search location because of no info. GeoInfo='${JSON.stringify(info)}'.`);
             return null;
         }
 
