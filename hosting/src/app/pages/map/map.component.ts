@@ -26,7 +26,7 @@ export class MapComponent implements OnDestroy {
     chartOption: EChartOption = {
         backgroundColor: '#a0d4d8',
         title: {
-            text: 'My super app',
+            text: config.title,
             subtext: 'Realtime events reporting',
             left: 'center',
             top: 'top'
