@@ -1,6 +1,7 @@
 import { EventConfig } from "./models/event-config";
 
 export const config = {
+    title: 'My Super App',
     events: {
         first_open: {
             displayName: 'Install'
