@@ -6,7 +6,6 @@ import { FSPath } from '../../../../common/src/firebase/firestore/fs-path';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { DistinctEvent } from '../models/distinct-event';
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +13,8 @@ import { DistinctEvent } from '../models/distinct-event';
 export class DataService {
     constructor(private firestore: AngularFirestore) { }
 
-    subscribeEvents(from: firebase.firestore.Timestamp, eventName?: string): Observable<DistinctEvent[]> {
+    subscribeEvents(from: firebase.firestore.Timestamp, eventName?: string):
+        Observable<Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>[]> {
         return this.firestore.collection<Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>>
             (FSPath.events(), ref => {
                 let query = ref.where('timestamp', '>=', from);
@@ -23,31 +23,6 @@ export class DataService {
                 }
                 return query;
             })
-            .valueChanges().pipe(map(events => {
-                const result: DistinctEvent[] = [];
-                for (const e of events) {
-                    let distinct = result.find(r => r.name === e.name);
-                    if (distinct == null) {
-                        distinct = {
-                            name: e.name,
-                            locationEvents: []
-                        };
-                        result.push(distinct);
-                    }
-
-                    const place = distinct.locationEvents.find(p => (p.location == null && e.location == null)
-                        || (p.location && e.location && p.location.geoPoint.isEqual(e.location.geoPoint)));
-                    if (place != null) {
-                        place.events.push(e);
-                    } else {
-                        distinct.locationEvents.push({
-                            events: [e],
-                            location: e.location
-                        });
-                    }
-                }
-
-                return result;
-            }));
+            .valueChanges();
     }
 }

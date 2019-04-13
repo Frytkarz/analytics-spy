@@ -3,12 +3,11 @@ import { Event } from '../../../../../common/src/firebase/firestore/models/event
 import { EChartOption, ECharts } from 'echarts';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
-import { DistinctEvent, LocationEvent } from 'src/app/models/distinct-event';
 import { DataService } from 'src/app/services/data.service';
 import { Subscription } from 'rxjs';
 import * as mathjs from 'mathjs';
 import { config } from '../../../../../common/src/config/config';
-import { FormControl } from '@angular/forms';
+import { Location } from '../../../../../common/src/firebase/firestore/models/locations/location';
 
 @Component({
     selector: 'app-map',
@@ -35,7 +34,7 @@ export class MapComponent implements OnDestroy {
         tooltip: {
             trigger: 'item',
             formatter: function (params: EChartOption.Tooltip.Format) {
-                const event = params.data.placeEvent as LocationEvent;
+                const event = params.data as SerieData;
                 const name = event.events[0].name;
                 const eventConfig = config.events[name];
 
@@ -118,25 +117,40 @@ export class MapComponent implements OnDestroy {
             from = firebase.firestore.Timestamp.fromMillis((from.seconds - (this.minutesBefore * 60)) * 1000);
         }
 
-        this.subscription = this.data.subscribeEvents(from, this.event).subscribe(distinctEvents => {
+        this.subscription = this.data.subscribeEvents(from, this.event).subscribe(events => {
             const legendData = (this.chartOption.legend as any).data = [];
-            this.chartOption.series = distinctEvents.map(de => {
-                legendData.push(de.name);
-                return {
-                    type: 'scatter',
-                    coordinateSystem: 'geo',
-                    name: de.name,
-                    data: de.locationEvents.map(p => {
-                        return {
-                            name: de.name,
-                            value: p.location != null
-                                ? [p.location.geoPoint.longitude, p.location.geoPoint.latitude]
-                                : [31.158288, -40.293733],
-                            placeEvent: p
-                        };
-                    })
-                };
-            });
+            this.chartOption.series = [];
+            const series = this.chartOption.series as Serie[];
+            for (const e of events) {
+                let serie = series.find(s => s.name === e.name);
+                if (serie == null) {
+                    legendData.push(e.name);
+                    serie = {
+                        type: 'scatter',
+                        coordinateSystem: 'geo',
+                        name: e.name,
+                        data: []
+                    };
+                    series.push(serie);
+                }
+
+                const element = serie.data.find(d =>
+                    (d.location == null && e.location == null)
+                    || (d.location && e.location && d.location.geoPoint.isEqual(e.location.geoPoint)));
+                if (element != null) {
+                    element.events.push(e);
+                } else {
+                    serie.data.push({
+                        name: e.name,
+                        value: e.location != null
+                            ? [e.location.geoPoint.longitude, e.location.geoPoint.latitude]
+                            : [31.158288, -40.293733],
+                        events: [e],
+                        location: e.location
+                    });
+                }
+            }
+
             this.echartsInstance.setOption(this.chartOption, true);
         });
 
@@ -151,4 +165,18 @@ export class MapComponent implements OnDestroy {
         const mins = value % 60;
         return `${(value - mins) / 60}:${mins}`;
     }
+}
+
+interface Serie {
+    type: string;
+    coordinateSystem: string;
+    name: string;
+    data: SerieData[];
+}
+
+interface SerieData {
+    name: string;
+    value: number[];
+    events: Event<firebase.firestore.Timestamp, firebase.firestore.GeoPoint>[];
+    location?: Location<firebase.firestore.GeoPoint>;
 }
